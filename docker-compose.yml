@@ -1,0 +1,11 @@
+services:
+  main:
+    build: .
+    image: jupyter/mine
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./:/home/jovyan/workspace
+    # user: root
+    # command: bash -c "chown -R jovyan /home/jovyan/workspace && su jovyan -l -c bash -c 'jupyter lab'"
+    

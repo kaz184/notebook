@@ -6,6 +6,10 @@ services:
       - "8888:8888"
     volumes:
       - ./:/home/jovyan/workspace
-    # user: root
-    # command: bash -c "chown -R jovyan /home/jovyan/workspace && su jovyan -l -c bash -c 'jupyter lab'"
+    secrets:
+      - ssh_key
+
+secrets:
+  ssh_key:
+    file: ~/.ssh/github
     

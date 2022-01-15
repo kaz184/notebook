@@ -50,12 +50,14 @@ RUN apt install -y ca-certificates fonts-liberation libappindicator3-1 libasound
 ## Misc.
 USER $NB_UID
 RUN mamba install -y jupyterlab-git
-ENV JUPYTER_ENABLE_LAB=yes
-# ADD startup.jl $HOME/.julia/config/startup.jl
 ADD ssh_config .ssh/config
 # to make zx script able to use global modules
 ENV NODE_PATH=$CONDA_DIR/lib/node_modules
+# ENV JUPYTER_ENABLE_LAB=yes
+# ENTRYPOINT ["tini", "-g", "--"]
+CMD ["jupyter", "lab", "--ContentsManager.allow_hidden=True"]
 
 ## Finalize
 USER $NB_UID
 WORKDIR $HOME
+

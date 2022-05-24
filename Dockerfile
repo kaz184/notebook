@@ -16,15 +16,14 @@ USER root
 RUN apt update
 RUN apt install -y build-essential nkf jq
 
-## R libs
+## R cmdstan
 USER $NB_UID
 RUN mamba install -y cmdstan
 ENV CMDSTAN=$CONDA_DIR/bin/cmdstan
 RUN R -e 'install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", "https://cloud.r-project.org"))'
 RUN R -e 'devtools::install_github("IRkernel/repr@936303e4287c36eacc376a9c16a0533aab5a8d7b")'
-RUN mamba install -y r-metr r-ggpubr r-mgcv r-ggally
 
-## Julia libs
+## Julia Conda, PyCall, RCall
 USER $NB_UID
 RUN julia -e 'using Pkg; pkg"update"'
 RUN julia -e 'using Pkg; pkg"add IJulia"'
@@ -34,9 +33,6 @@ ENV PYTHON=""
 RUN julia -e 'using Pkg; pkg"add PyCall; build PyCall"'
 ENV R_HOME=/opt/conda/lib/R
 RUN julia -e 'using Pkg; pkg"add RCall; build RCall"'
-# RUN julia -e 'using Pkg; pkg"add SymPy"; using SymPy'
-# RUN julia -e 'using Pkg; pkg"add EventSimulation"; using EventSimulation'
-# RUN julia -e 'using Pkg; pkg"add DifferentialEquations"; using DifferentialEquations'
 
 ## Node setup
 USER $NB_UID
@@ -54,8 +50,15 @@ ADD ssh_config .ssh/config
 # to make zx script able to use global modules
 ENV NODE_PATH=$CONDA_DIR/lib/node_modules
 # ENV JUPYTER_ENABLE_LAB=yes
-# ENTRYPOINT ["tini", "-g", "--"]
 CMD ["jupyter", "lab", "--ContentsManager.allow_hidden=True"]
+
+RUN mamba install -y r-metr r-ggpubr r-ggally
+RUN mamba install -y r-mice r-mgcv
+RUN julia -e 'using Pkg; pkg"add SymPy"; using SymPy'
+RUN julia -e 'using Pkg; pkg"add EventSimulation"; using EventSimulation'
+RUN julia -e 'using Pkg; pkg"add DifferentialEquations"; using DifferentialEquations'
+RUN julia -e 'using Pkg; pkg"add Parameters"; using Parameters'
+
 
 ## Finalize
 USER $NB_UID

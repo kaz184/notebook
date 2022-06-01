@@ -46,11 +46,10 @@ RUN apt install -y ca-certificates fonts-liberation libappindicator3-1 libasound
 ## Misc.
 USER $NB_UID
 RUN mamba install -y jupyterlab-git
-ADD ssh_config .ssh/config
+COPY ssh_config $HOME/.ssh/config
 # to make zx script able to use global modules
 ENV NODE_PATH=$CONDA_DIR/lib/node_modules
 # ENV JUPYTER_ENABLE_LAB=yes
-CMD ["jupyter", "lab", "--ContentsManager.allow_hidden=True"]
 
 RUN mamba install -y r-metr r-ggpubr r-ggally
 RUN mamba install -y r-mice r-mgcv
@@ -58,9 +57,12 @@ RUN julia -e 'using Pkg; pkg"add SymPy"; using SymPy'
 RUN julia -e 'using Pkg; pkg"add EventSimulation"; using EventSimulation'
 RUN julia -e 'using Pkg; pkg"add DifferentialEquations"; using DifferentialEquations'
 RUN julia -e 'using Pkg; pkg"add Parameters"; using Parameters'
-
+RUN julia -e 'using Pkg; pkg"add MLStyle"; using MLStyle'
+RUN julia -e 'using Pkg; pkg"add Pluto"; using Pluto'
 
 ## Finalize
 USER $NB_UID
 WORKDIR $HOME
+COPY --chmod=u+x init.sh $HOME/init.sh
+CMD $HOME/init.sh
 

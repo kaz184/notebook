@@ -57,8 +57,9 @@ RUN julia -e 'using Pkg; pkg"add SymPy"; using SymPy'
 RUN julia -e 'using Pkg; pkg"add EventSimulation"; using EventSimulation'
 RUN julia -e 'using Pkg; pkg"add DifferentialEquations"; using DifferentialEquations'
 RUN julia -e 'using Pkg; pkg"add Parameters"; using Parameters'
-RUN julia -e 'using Pkg; pkg"add MLStyle"; using MLStyle'
+# RUN julia -e 'using Pkg; pkg"add MLStyle"; using MLStyle' # this lib has ambiguous scope management so that programs becomes wrong silently
 RUN julia -e 'using Pkg; pkg"add Pluto"; using Pluto'
+RUN julia -e 'using Pkg; pkg"add PlutoUI"; using PlutoUI'
 
 ## Finalize
 USER $NB_UID

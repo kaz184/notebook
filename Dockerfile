@@ -58,8 +58,10 @@ RUN julia -e 'using Pkg; pkg"add EventSimulation"; using EventSimulation'
 RUN julia -e 'using Pkg; pkg"add DifferentialEquations"; using DifferentialEquations'
 RUN julia -e 'using Pkg; pkg"add Parameters"; using Parameters'
 # RUN julia -e 'using Pkg; pkg"add MLStyle"; using MLStyle' # this lib has ambiguous scope management so that programs becomes wrong silently
-RUN julia -e 'using Pkg; pkg"add Pluto"; using Pluto'
-RUN julia -e 'using Pkg; pkg"add PlutoUI"; using PlutoUI'
+# RUN julia -e 'using Pkg; pkg"add Pluto"; using Pluto'
+# RUN julia -e 'using Pkg; pkg"add PlutoUI"; using PlutoUI'
+
+RUN mamba install -y matplotlib seaborn polars jax
 
 ## Finalize
 USER $NB_UID

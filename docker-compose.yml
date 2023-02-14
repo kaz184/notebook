@@ -1,16 +1,16 @@
 services:
   main:
+    tty: true
     build: .
-    image: jupyter/mine
+    image: notebook
     ports:
       - "8888:8888"
-      - "1234:1234"
+      # - "1234:1234"
     volumes:
-      - ./:/home/jovyan/workspace
+      - ./notebook/:/home/docker/workspace
     secrets:
       - ssh_key
 
 secrets:
   ssh_key:
     file: ~/.ssh/github
-    

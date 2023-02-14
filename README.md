@@ -1,7 +1,10 @@
-# Very Personal Exploratory Data Analysis Playground
+# My notebook
 
-## Get started
-Execute `docker compose up` and access `localhost:8888`.
+## What's this
 
-## Rough Blueprint
-Under constructon. Any ideas how to manage a bunch of data and analytic codes.
+Very personal Docker repo for exploratory data analysis.
+
+## How to use
+
+1. `docker compose up`
+2. `http://localhost:8888`

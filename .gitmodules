@@ -1,3 +1,0 @@
-[submodule "owid"]
-    path = data/owid
-    url = https://github.com/owid/covid-19-data

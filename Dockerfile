@@ -3,9 +3,9 @@ FROM debian:bullseye-slim
 
 ## Prerequisites
 USER root
-RUN apt update && \
-    apt upgrade && \
-    apt install -y sudo wget less nkf jq git build-essential
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y sudo wget less nkf jq git build-essential
 
 ## Julia
 USER root

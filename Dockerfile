@@ -34,7 +34,7 @@ RUN mamba init \
     cmdstan \
     jupyterlab jupyterlab-git \
     r-patchwork r-ggpubr r-ggpmisc r-ggally r-metr \
-    r-brms r-bh r-mice r-quantreg \
+    r-brms r-bh r-mice r-quantreg r-vtree \
     jax jaxlib dm-haiku datasets scikit-learn sktime \
     && mamba clean -afy
 

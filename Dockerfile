@@ -1,70 +1,61 @@
+# https://pythonspeed.com/articles/conda-docker-image-size/
+# https://jcristharif.com/conda-docker-tips.html
+
 FROM debian:bullseye-slim
 
 
 ## Prerequisites
 USER root
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y sudo wget less nkf jq git build-essential
-
-## Julia
-USER root
-ENV JULIA_VERSION=1.8.5
-RUN wget https://julialang-s3.julialang.org/bin/linux/x64/${JULIA_VERSION%.*}/julia-${JULIA_VERSION}-linux-x86_64.tar.gz -P /tmp && \
-    tar -xvzf /tmp/julia-${JULIA_VERSION}-linux-x86_64.tar.gz -C /opt && \
-    ln -s /opt/julia-${JULIA_VERSION}/bin/julia /usr/local/bin/julia && \
-    rm /tmp/julia-${JULIA_VERSION}-linux-x86_64.tar.gz
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y sudo wget curl procps less nkf jq git build-essential
 
 ## Mamba
 USER root
-RUN useradd -m docker && \
-    echo 'docker:docker' | chpasswd && \
-    usermod -aG sudo docker
+RUN useradd -m docker \
+    && echo 'docker:docker' | chpasswd \
+    && usermod -aG sudo docker
 
 USER docker
 WORKDIR /home/docker
 
-RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh" -P /tmp && \
-    bash /tmp/Mambaforge-$(uname)-$(uname -m).sh -b && \
-    mambaforge/bin/conda shell.bash hook >> ~/.profile
-
-SHELL [ "/bin/bash", "-lc" ]
-RUN mamba init
+RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-pypy3-$(uname)-$(uname -m).sh" -P /tmp \
+    && bash /tmp/Mambaforge-pypy3-$(uname)-$(uname -m).sh -b \
+    && rm /tmp/Mambaforge-pypy3-$(uname)-$(uname -m).sh \
+    && mambaforge-pypy3/bin/conda shell.bash hook >> ~/.profile
 
 ## R, jupyter, cmdstan and so on with Mamba.
-USER docker
-RUN mamba install -y \
+SHELL [ "/bin/bash", "-lc" ]
+RUN mamba init \
+    && mamba create -n notebook -y \
+    nomkl \
+    python=3.9 \
+    r-essentials=4.2 \
     cmdstan \
     jupyterlab jupyterlab-git \
-    r r-irkernel r-tidyverse \    
     r-patchwork r-ggpubr r-ggpmisc r-ggally r-metr \
-    r-brms r-bh \
-    r-mgcv \
-    r-mice \
-    r-quantreg
-
-## Julia Conda, PyCall, RCall
-USER docker
-RUN julia -e '\
-    using Pkg;\
-    pkg"\
-    update; \
-    add IJulia Conda PyCall RCall;\
-    add DifferentialEquations;\
-    ";\
-    using IJulia;\
-    installkernel("Julia", "-t auto");\
-    '
+    r-brms r-bh r-mice r-quantreg \
+    jax jaxlib dm-haiku datasets scikit-learn sktime \
+    && mamba clean -afy
 
 ## cmdstanr
 USER docker
-RUN R -e '\
+RUN mamba run -n notebook R -e '\
     install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", "https://cloud.r-project.org"));\
     '
 
 ## Misc.
 USER docker
 COPY ssh_config /home/docker/.ssh/config
+
+## Python
+# 2.85 GB
+# RUN mamba install -n notebook -y pytorch torchvision torchaudio cpuonly -c pytorch 
+# RUN mamba run -n notebook pip install jax jaxlib dm-haiku datasets scikit-learn sktime
+
+## Julia
+RUN curl -fsSL https://install.julialang.org | sh -s -- -y --default-channel 1.9 
+RUN mamba run -n notebook julia -e 'using Pkg; pkg"add IJulia"'
 
 ## Finalize
 USER docker

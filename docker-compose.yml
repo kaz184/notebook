@@ -2,7 +2,7 @@ services:
   main:
     tty: true
     build: .
-    image: notebook
+    # image: notebook
     ports:
       - "8888:8888"
       # - "1234:1234"

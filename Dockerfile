@@ -1,14 +1,14 @@
 # https://pythonspeed.com/articles/conda-docker-image-size/
 # https://jcristharif.com/conda-docker-tips.html
 
-FROM debian:bullseye-slim
+FROM debian:12-slim
 
 
 ## Prerequisites
 USER root
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get install -y sudo wget curl procps less nkf jq git build-essential
+RUN apt update \
+    && apt upgrade -y \
+    && apt install -y sudo wget curl procps less nkf jq git build-essential
 
 ## Mamba
 USER root
@@ -23,9 +23,9 @@ RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mamb
     && bash /tmp/Mambaforge-pypy3-$(uname)-$(uname -m).sh -b \
     && rm /tmp/Mambaforge-pypy3-$(uname)-$(uname -m).sh \
     && mambaforge-pypy3/bin/conda shell.bash hook >> ~/.profile
+SHELL [ "/bin/bash", "-lc" ]
 
 ## R, jupyter, cmdstan and so on with Mamba.
-SHELL [ "/bin/bash", "-lc" ]
 RUN mamba init \
     && mamba create -n notebook -y \
     nomkl \
@@ -36,6 +36,7 @@ RUN mamba init \
     r-patchwork r-ggpubr r-ggpmisc r-ggally r-metr \
     r-brms r-bh r-mice r-quantreg r-vtree \
     jax jaxlib dm-haiku datasets scikit-learn sktime \
+    catboost optuna \
     && mamba clean -afy
 
 ## cmdstanr

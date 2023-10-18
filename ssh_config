@@ -1,3 +1,0 @@
-Host github.com
-    User git
-    IdentityFile /run/secrets/ssh_key

@@ -1,15 +1,17 @@
 services:
   main:
-    tty: true
     build: .
-    # image: notebook
-    ports:
-      - "8888:8888"
-      # - "1234:1234"
     volumes:
-      - ./notebook/:/home/docker/workspace
+      - julia:/home/mambauser/.julia:rw
+      - ./notebook:/home/mambauser/notebook
+    ports:
+      - 8888:8888
     secrets:
       - ssh_key
+
+volumes:
+  julia:
+    external: true
 
 secrets:
   ssh_key:

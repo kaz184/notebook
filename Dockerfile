@@ -1,65 +1,66 @@
-# https://pythonspeed.com/articles/conda-docker-image-size/
-# https://jcristharif.com/conda-docker-tips.html
+FROM mambaorg/micromamba:1.5-bullseye-slim
 
-FROM debian:12-slim
-
-
-## Prerequisites
 USER root
-RUN apt update \
-    && apt upgrade -y \
-    && apt install -y sudo wget curl procps less nkf jq git build-essential
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    <<EOF
+rm -f /etc/apt/apt.conf.d/docker-clean
+echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+apt update
+apt install -y vim wget curl git sudo jq
+echo '$MAMBA_USER ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+EOF
 
-## Mamba
-USER root
-RUN useradd -m docker \
-    && echo 'docker:docker' | chpasswd \
-    && usermod -aG sudo docker
-
-USER docker
-WORKDIR /home/docker
-
-RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-pypy3-$(uname)-$(uname -m).sh" -P /tmp \
-    && bash /tmp/Mambaforge-pypy3-$(uname)-$(uname -m).sh -b \
-    && rm /tmp/Mambaforge-pypy3-$(uname)-$(uname -m).sh \
-    && mambaforge-pypy3/bin/conda shell.bash hook >> ~/.profile
-SHELL [ "/bin/bash", "-lc" ]
-
-## R, jupyter, cmdstan and so on with Mamba.
-RUN mamba init \
-    && mamba create -n notebook -y \
+USER $MAMBA_USER
+RUN --mount=target=/opt/conda/pkgs,type=cache,uid=$MAMBA_USER_ID,gid=$MAMBA_USER_GID \
+    <<EOF
+micromamba install -y -n base -c conda-forge \
     nomkl \
+    conda \
+    juliaup \
     python=3.9 \
-    r-essentials=4.2 \
-    cmdstan \
+    seaborn \
     jupyterlab jupyterlab-git \
+    jax jaxlib dm-haiku \
+    datasets \
+    scikit-learn sktime catboost optuna \
+    r-essentials=4.3 \
+    r-irkernel \
     r-patchwork r-ggpubr r-ggpmisc r-ggally r-metr \
-    r-brms r-bh r-mice r-quantreg r-vtree \
-    jax jaxlib dm-haiku datasets scikit-learn sktime \
-    catboost optuna \
-    && mamba clean -afy
+    r-brms r-bh r-mice r-quantreg r-vtree
+EOF
 
-## cmdstanr
-USER docker
-RUN mamba run -n notebook R -e '\
-    install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", "https://cloud.r-project.org"));\
-    '
+SHELL [ "/bin/bash", "-ic" ]
+WORKDIR /home/$MAMBA_USER
+RUN <<EOF
+juliaup add 1.9
+EOF
 
-## Misc.
-USER docker
-COPY ssh_config /home/docker/.ssh/config
+COPY --chown=$MAMBA_USER_ID:$MAMBA_USER_GID <<EOF /home/$MAMBA_USER/.ssh/config
+Host github.com
+    User git
+    IdentityFile /run/secrets/ssh_key
+EOF
 
-## Python
-# 2.85 GB
-# RUN mamba install -n notebook -y pytorch torchvision torchaudio cpuonly -c pytorch 
-# RUN mamba run -n notebook pip install jax jaxlib dm-haiku datasets scikit-learn sktime
+COPY --chmod=744 --chown=$MAMBA_USER_ID:$MAMBA_USER_GID <<EOF init.sh
+#! /bin/bash
+CONDA_JL_HOME=/opt/conda julia -e 'using Pkg; Pkg.add(strip.(readlines()))' <<HERE
+    Conda
+    RCall
+    IJulia
+    MLStyle
+    DataFrames
+HERE
 
-## Julia
-RUN curl -fsSL https://install.julialang.org | sh -s -- -y --default-channel 1.9 
-RUN mamba run -n notebook julia -e 'using Pkg; pkg"add IJulia"'
+julia <<HERE
+    using IJulia
+    for d in readdir(IJulia.kerneldir(), join=true)
+        rm(d, recursive=true)
+    end
+    IJulia.installkernel("Julia")
+HERE
 
-## Finalize
-USER docker
-COPY --chmod=u+x init.sh /tmp/init.sh
-CMD [ "/tmp/init.sh" ]
+jupyter lab --ContentsManager.allow_hidden=True --ip=0.0.0.0
+EOF
 
+ENTRYPOINT [ "/bin/bash", "-ic", "./init.sh" ]

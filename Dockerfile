@@ -8,7 +8,7 @@ rm -f /etc/apt/apt.conf.d/docker-clean
 echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 apt update
 apt install -y vim wget curl git sudo jq
-echo '$MAMBA_USER ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+echo "$MAMBA_USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 EOF
 
 USER $MAMBA_USER
@@ -58,6 +58,7 @@ julia <<HERE
     IJulia.installkernel("Julia")
 HERE
 
+sudo chown $(whoami):$(whoami) ~ -R
 jupyter lab --ContentsManager.allow_hidden=True --ip=0.0.0.0 --notebook-dir=~/notebook
 EOF
 

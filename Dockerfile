@@ -27,15 +27,10 @@ micromamba install -y -n base -c conda-forge \
     r-essentials=4.3 \
     r-irkernel \
     r-patchwork r-ggpubr r-ggpmisc r-ggally r-metr \
-    r-brms r-bh r-mice r-quantreg r-vtree
+    r-reticulate r-tidymodels r-brms r-bh r-mice r-quantreg r-vtree
 EOF
 
-SHELL [ "/bin/bash", "-ic" ]
 WORKDIR /home/$MAMBA_USER
-RUN <<EOF
-juliaup add 1.9
-EOF
-
 COPY --chown=$MAMBA_USER_ID:$MAMBA_USER_GID <<EOF /home/$MAMBA_USER/.ssh/config
 Host github.com
     User git
@@ -44,9 +39,12 @@ EOF
 
 COPY --chmod=744 --chown=$MAMBA_USER_ID:$MAMBA_USER_GID <<EOF init.sh
 #! /bin/bash
+juliaup add 1.9
+
 CONDA_JL_HOME=/opt/conda julia -e 'using Pkg; Pkg.add(strip.(readlines()))' <<HERE
     Conda
     RCall
+    PythonCall
     IJulia
     MLStyle
     DataFrames
@@ -60,7 +58,7 @@ julia <<HERE
     IJulia.installkernel("Julia")
 HERE
 
-jupyter lab --ContentsManager.allow_hidden=True --ip=0.0.0.0
+jupyter lab --ContentsManager.allow_hidden=True --ip=0.0.0.0 --notebook-dir=~/notebook
 EOF
 
 ENTRYPOINT [ "/bin/bash", "-ic", "./init.sh" ]

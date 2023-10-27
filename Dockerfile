@@ -18,8 +18,8 @@ micromamba install -y -n base -c conda-forge \
     nomkl \
     conda \
     juliaup \
-    python=3.9 \
-    seaborn \
+    python=3.10 \
+    datar plotnine seaborn \
     jupyterlab jupyterlab-git \
     jax jaxlib dm-haiku \
     datasets \

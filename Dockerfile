@@ -23,7 +23,7 @@ micromamba install -y -n base -c conda-forge \
     jupyterlab jupyterlab-git \
     jax jaxlib dm-haiku \
     datasets \
-    scikit-learn sktime catboost optuna \
+    scikit-learn sktime catboost lightgbm optuna \
     r-essentials=4.3 \
     r-irkernel \
     r-patchwork r-ggpubr r-ggpmisc r-ggally r-metr \

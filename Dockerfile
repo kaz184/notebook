@@ -7,7 +7,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 rm -f /etc/apt/apt.conf.d/docker-clean
 echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
 apt update
-apt install -y vim wget curl git sudo jq
+apt install -y vim wget curl git sudo jq build-essential
 echo "$MAMBA_USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 EOF
 
@@ -27,8 +27,20 @@ micromamba install -y -n base -c conda-forge \
     r-essentials=4.3 \
     r-irkernel \
     r-patchwork r-ggpubr r-ggpmisc r-ggally r-metr \
-    r-reticulate r-tidymodels r-brms r-bh r-mice r-quantreg r-vtree
+    r-reticulate r-tidymodels r-brms r-bh r-mice r-quantreg r-vtree \
+    r-surveillance
 EOF
+
+RUN micromamba run -n base R --no-save <<HERE
+install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/"))
+require(cmdstanr)
+install_cmdstan(cpp_options=list(TBB_CXX_TYPE='gcc'))
+HERE
+
+# RUN micromamba run -n base R --no-save <<HERE
+# require(cmdstanr)
+# install_cmdstan(dir='/opt/conda/bin/cmdstan', cpp_options = list(TBB_CXX_TYPE='gcc'), overwrite = TRUE)
+# HERE
 
 WORKDIR /home/$MAMBA_USER
 COPY --chown=$MAMBA_USER_ID:$MAMBA_USER_GID <<EOF /home/$MAMBA_USER/.ssh/config

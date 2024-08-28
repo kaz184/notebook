@@ -1,0 +1,23 @@
+[project]
+name = "notebook"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "jupyterlab>=4.2.5",
+    "scikit-learn>=1.5.1",
+    "lightgbm>=4.5.0",
+    "streamlit>=1.38.0",
+    "duckdb>=1.0.0",
+    "dask>=2024.8.1",
+    "matplotlib>=3.9.2",
+    "plotly>=5.23.0",
+    "yfinance>=0.2.43",
+    "cvxpy>=1.5.3",
+    "sktime>=0.32.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -16,8 +16,10 @@ dependencies = [
     "yfinance>=0.2.43",
     "cvxpy>=1.5.3",
     "sktime>=0.32.3",
+    "apache-airflow>=2.10.0",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
